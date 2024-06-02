@@ -3,8 +3,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class HotelBookingSystem {
+
+    private int ticketNumber = 1; // Initialize the ticket number
+
     public static void main(String[] args) {
         HotelBookingSystem system = new HotelBookingSystem();
         system.run();
@@ -30,7 +32,7 @@ public class HotelBookingSystem {
             default:
                 System.out.println("Invalid choice. Please try again.");
         }
-    } // Close the run method here
+    }
 
     public void showHotelMenu(Hotel hotel, Scanner scanner) {
         boolean exit = false; // Flag to control the loop
@@ -45,17 +47,20 @@ public class HotelBookingSystem {
             System.out.println("6. Manage Services");
             System.out.println("7. Exit");
             System.out.println("Enter your choice:");
-    
+
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1:
+                    // Implement display logic
                     displayAvailableRooms(hotel);
                     break;
                 case 2:
                     // Implement cleaning room (Admin) logic
+                    hotel.cleanRooms();
                     break;
                 case 3:
                     // Implement booking a room logic
+                    bookRoom(hotel, scanner);
                     break;
                 case 4:
                     // Implement check-in logic
@@ -75,7 +80,6 @@ public class HotelBookingSystem {
             }
         } while (!exit);
     }
-    
 
     public void displayAvailableRooms(Hotel hotel) {
         List<Room> availableRooms = hotel.getAvailableRooms();
@@ -87,8 +91,105 @@ public class HotelBookingSystem {
         System.out.println("\n");
     }
 
+    public void bookRoom(Hotel hotel, Scanner scanner) {
+        // Display available rooms
+        displayAvailableRooms(hotel);
+        
+        System.out.println("Please enter which room you would like to book:");
+        String roomNumber = scanner.next();
 
-    class Room {
+        // Check if the room is available
+        Room roomToBook = hotel.getRoomByNumber(roomNumber);
+        if (roomToBook != null && roomToBook.isCleaned() && !roomToBook.isBooked()) {
+            System.out.println("Please enter your name:");
+            String name = scanner.next();
+
+            System.out.println("Please enter the guest name if any:");
+            String guestName = scanner.next();
+
+            // Calculate total cost
+            double totalCost = roomToBook.getPricePerNight();
+            System.out.println("Here is our service:");
+            System.out.println("1. Breakfast: $10 per day");
+            System.out.println("2. Customer Service: $20 per meal");
+            System.out.println("3. Laundry Service: $5 per item");
+            System.out.println("-----------------------------------------------");
+            System.out.println("Please enter the service number, or 'no' if none:");
+            String serviceChoice = scanner.next();
+            if (!serviceChoice.equalsIgnoreCase("no")) {
+                // Calculate service cost and update total cost
+                double serviceCost = calculateServiceCost(serviceChoice);
+                totalCost += serviceCost;
+                System.out.println("Service: " + serviceChoice);
+            }
+
+            // Print booking information
+            System.out.println("Here is your information. Please make sure the information is collected:");
+            System.out.println("Name: " + name);
+            System.out.println("Guest: " + guestName);
+            if (!serviceChoice.equalsIgnoreCase("no")) {
+                System.out.println("Service: " + getServiceDescription(serviceChoice));
+            }
+            System.out.println("Total Cost: " + totalCost);
+            System.out.println("Thank you for your booking!");
+
+            // Generate ticket number
+            int ticket = ticketNumber++;
+            System.out.println("Here is your ticket: " + ticket);
+
+            // Loyalty Discount
+            int loyaltyDiscount = calculateLoyaltyDiscount(hotel);
+            System.out.println("Loyalty Discount: Since you visited " + loyaltyDiscount + " times, you have a $" + loyaltyDiscount + " discount");
+        } else {
+            System.out.println("The room is not available for booking.");
+        }
+    }
+
+    // Method to calculate service cost
+    public double calculateServiceCost(String serviceChoice) {
+        double serviceCost = 0;
+        switch (serviceChoice) {
+            case "1":
+                serviceCost = 10.0;
+                break;
+            case "2":
+                serviceCost = 20.0;
+                break;
+            case "3":
+                serviceCost = 5.0;
+                break;
+            default:
+                break;
+        }
+        return serviceCost;
+    }
+
+    // Method to get service description
+    public String getServiceDescription(String serviceChoice) {
+        String serviceDescription = "";
+        switch (serviceChoice) {
+            case "1":
+                serviceDescription = "Breakfast";
+                break;
+            case "2":
+                serviceDescription = "Customer Service";
+                break;
+            case "3":
+                serviceDescription = "Laundry Service";
+                break;
+            default:
+                break;
+        }
+        return serviceDescription;
+    }
+
+    // Method to calculate loyalty discount
+    public int calculateLoyaltyDiscount(Hotel hotel) {
+        // Assume loyalty discount calculation logic here
+        return 0; // Placeholder, replace with actual calculation
+    }
+
+    abstract static class Room {
         private String type;
         private int capacity;
         private double pricePerNight;
@@ -120,139 +221,33 @@ public class HotelBookingSystem {
         public String getTypeString() {
             return type;
         }
-    }
 
-    class Booking {
-        private Customer primaryCustomer;
-        private Customer guest;
-        private Room room;
-        private Date checkInDate;
-        private Date checkOutDate;
-        private List<Service> services;
-
-        public Booking(Customer primaryCustomer, Customer guest, Room room, Date checkInDate, Date checkOutDate) {
-            this.primaryCustomer = primaryCustomer;
-            this.guest = guest;
-            this.room = room;
-            this.checkInDate = checkInDate;
-            this.checkOutDate = checkOutDate;
-            this.services = new ArrayList<>();
+        public void setCleaned(boolean cleaned) {
+            this.cleaned = cleaned;
         }
 
-        public Customer getPrimaryCustomer() {
-            return primaryCustomer;
-        }
 
-        public void setPrimaryCustomer(Customer primaryCustomer) {
-            this.primaryCustomer = primaryCustomer;
-        }
-
-        public Customer getGuest() {
-            return guest;
-        }
-
-        public void setGuest(Customer guest) {
-            this.guest = guest;
-        }
-
-        public Room getRoom() {
-            return room;
-        }
-
-        public void setRoom(Room room) {
-            this.room = room;
-        }
-
-        public Date getCheckInDate() {
-            return checkInDate;
-        }
-
-        public void setCheckInDate(Date checkInDate) {
-            this.checkInDate = checkInDate;
-        }
-
-        public Date getCheckOutDate() {
-            return checkOutDate;
-        }
-
-        public void setCheckOutDate(Date checkOutDate) {
-            this.checkOutDate = checkOutDate;
-        }
-
-        public List<Service> getServices() {
-            return services;
-        }
-
-        public void setServices(List<Service> services) {
-            this.services = services;
+        // Add getPricePerNight method to your Room class
+        public double getPricePerNight() {
+            return pricePerNight;
         }
     }
 
+    static class AlphaRoom extends Room {
+        public AlphaRoom(String type, int capacity, double pricePerNight, String number) {
+            super(type, capacity, pricePerNight, number);
+        }
+    }
 
+    static class BetaRoom extends Room {
+        public BetaRoom(String type, int capacity, double pricePerNight, String number) {
+            super(type, capacity, pricePerNight, number);
+        }
+    }
 
-    class Customer {
+    abstract static class Hotel {
         private String name;
-        private int loyaltyPoints;
-        private List<Booking> bookings;
-
-        public Customer(String name) {
-            this.name = name;
-            this.loyaltyPoints = 0;
-            this.bookings = new ArrayList<>();
-        }
-
-        public void addBooking(Booking booking) {
-            bookings.add(booking);
-        }
-    }
-
-
-    abstract class Service {
-        protected double price;
-
-        public Service(double price) {
-            this.price = price;
-        }
-
-        public abstract double calculateCost();
-    }
-
-    class Breakfast extends Service {
-        public Breakfast(double price) {
-            super(price);
-        }
-
-        @Override
-        public double calculateCost() {
-            return price;
-        }
-    }
-
-    class RoomService extends Service {
-        public RoomService(double price) {
-            super(price);
-        }
-
-        @Override
-        public double calculateCost() {
-            return price;
-        }
-    }
-
-    class LaundryService extends Service {
-        public LaundryService(double price) {
-            super(price);
-        }
-
-        @Override
-        public double calculateCost() {
-            return price;
-        }
-    }
-
-    abstract class Hotel {
-        private String name;
-        List<Room> rooms;
+        protected List<Room> rooms;
 
         public Hotel(String name) {
             this.name = name;
@@ -262,19 +257,19 @@ public class HotelBookingSystem {
 
         protected abstract void initializeRooms(); // Abstract method to be implemented by subclasses
 
-        public String getName() { // Define getName() method in the abstract class
+        public String getName() {
             return name;
         }
-        
+
         // Method to add a new room type
         public abstract void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
-    
+
         // Method to update a room type
         public abstract void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
-    
+
         // Method to remove a room type
         public abstract void removeRoomType(String roomType);
-    
+
         // Method to get available rooms for booking
         public List<Room> getAvailableRooms() {
             // Logic to retrieve available rooms (e.g., rooms that are cleaned and not booked)
@@ -286,92 +281,94 @@ public class HotelBookingSystem {
             }
             return availableRooms;
         }
-    
-        // Other methods for managing bookings, etc.
+
+        // Method to clean rooms
+        public void cleanRooms() {
+            for (Room room : rooms) {
+                if (!room.isCleaned()) {
+                    System.out.println(room.getNumber() + "is cleaning!");
+                    room.setCleaned(true); // Mark the room as cleaned
+                } else {
+                    System.out.println("Room " + room.getNumber() + " is cleaned!");
+                }
+            }
+            System.out.println("-----------------");
+        }
+
+ 
+        public Room getRoomByNumber(String roomNumber) {
+            for (Room room : rooms) {
+                if (room.getNumber().equals(roomNumber)) {
+                    return room;
+                }
+            }
+            return null; // Return null if room not found
+        }
+
+
+
     }
 
-    class AlphaHotel extends Hotel {
+    static class AlphaHotel extends Hotel {
         public AlphaHotel() {
             super("Alpha");
         }
-    
+
         @Override
         protected void initializeRooms() {
-            // Add Double Standard rooms at 2f
-            rooms.add(new Room("Double Standard", 2, 150.0, "201"));
-            rooms.add(new Room("Double Standard", 2, 150.0, "202"));
-
-            // Add Deluxe Double rooms at 3f
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "301"));
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "302"));
-
-            // Add Junior Suite room at 4f
-            rooms.add(new Room("Junior Suite", 2, 300.0, "401"));
-
-            // Add Grand Suite room at 5f
-            rooms.add(new Room("Grand Suite", 2, 400.0, "501"));
-
-            // Add new type: Family at 6f
-            rooms.add(new Room("Family Room", 3, 225.0, "601"));
+            // Add rooms for Alpha Hotel
+            rooms.add(new AlphaRoom("Double Standard", 2, 150.0, "201"));
+            rooms.add(new AlphaRoom("Double Standard", 2, 150.0, "202"));
+            rooms.add(new AlphaRoom("Deluxe Double", 2, 200.0, "301"));
+            rooms.add(new AlphaRoom("Deluxe Double", 2, 200.0, "302"));
+            rooms.add(new AlphaRoom("Junior Suite", 2, 300.0, "401"));
+            rooms.add(new AlphaRoom("Grand Suite", 2, 400.0, "501"));
+            rooms.add(new AlphaRoom("Family Room", 3, 225.0, "601"));
         }
-    
+
         @Override
         public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
             // Logic to add a new room type to Alpha Hotel
         }
-    
+
         @Override
         public void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
             // Logic to update a room type in Alpha Hotel
         }
-    
+
         @Override
         public void removeRoomType(String roomType) {
             // Logic to remove a room type from Alpha Hotel
         }
     }
-    
-    class BetaHotel extends Hotel {
+
+    static class BetaHotel extends Hotel {
         public BetaHotel() {
             super("Beta");
         }
-    
+
         @Override
         protected void initializeRooms() {
-            // Add Double Standard rooms at 2f
-            rooms.add(new Room("Double Standard", 2, 150.0, "201"));
-            rooms.add(new Room("Double Standard", 2, 150.0, "202"));
-            rooms.add(new Room("Double Standard", 2, 150.0, "203"));
-            rooms.add(new Room("Double Standard", 2, 150.0, "204"));
-
-
-            // Add Deluxe Double rooms at 3f
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "301"));
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "302"));
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "303"));
-            rooms.add(new Room("Deluxe Double", 2, 200.0, "304"));
-
-            //Add Family Room at 4f
-            rooms.add(new Room("Family Room", 3, 225.0, "404"));
-            rooms.add(new Room("Family Room", 3, 225.0, "405"));
-
-            // Add Junior Suite room at 5f
-            rooms.add(new Room("Junior Suite", 2, 300.0, "501"));
-
-            // Add Grand Suite room at 6f
-            rooms.add(new Room("Grand Suite", 2, 400.0, "601"));
+            // Add rooms for Beta Hotel
+            rooms.add(new BetaRoom("Double Standard", 2, 150.0, "201"));
+            rooms.add(new BetaRoom("Double Standard", 2, 150.0, "202"));
+            rooms.add(new BetaRoom("Deluxe Double", 2, 200.0, "301"));
+            rooms.add(new BetaRoom("Deluxe Double", 2, 200.0, "302"));
+            rooms.add(new BetaRoom("Junior Suite", 2, 300.0, "401"));
+            rooms.add(new BetaRoom("Grand Suite", 2, 400.0, "501"));
+            rooms.add(new BetaRoom("Family Room", 3, 225.0, "601"));
         }
-    
+
         @Override
         public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
             // Logic to add a new room type to Beta Hotel
         }
-    
+
         @Override
         public void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
             // Logic to update a room type in Beta Hotel
         }
-    
+
         @Override
         public void removeRoomType(String roomType) {
             // Logic to remove a room type from Beta Hotel
