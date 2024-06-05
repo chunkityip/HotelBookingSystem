@@ -20,21 +20,25 @@ public class HotelBookingSystem {
         System.out.println("(2 for New Hotel: Beta)");
         int choice = scanner.nextInt();
 
+        // Create an empty list of customers
+         List<Customer> customers = new ArrayList<>();
+         
+
         switch (choice) {
             case 1:
-                Hotel alphaHotel = new AlphaHotel(); // Instantiate AlphaHotel, a concrete subclass of Hotel
-                showHotelMenu(alphaHotel, scanner);
+                Hotel alphaHotel = new AlphaHotel();
+                showHotelMenu(alphaHotel, scanner , customers);
                 break;
             case 2:
-                Hotel betaHotel = new BetaHotel(); // Instantiate BetaHotel, a concrete subclass of Hotel
-                showHotelMenu(betaHotel, scanner);
+                Hotel betaHotel = new BetaHotel();
+                showHotelMenu(betaHotel, scanner , customers);
                 break;
             default:
                 System.out.println("Invalid choice. Please try again.");
         }
     }
 
-    public void showHotelMenu(Hotel hotel, Scanner scanner) {
+    public void showHotelMenu(Hotel hotel, Scanner scanner, List<Customer> customers) {
         boolean exit = false; // Flag to control the loop
         do {
             System.out.println("Welcome to " + hotel.getName() + "!");
@@ -60,10 +64,11 @@ public class HotelBookingSystem {
                     break;
                 case 3:
                     // Implement booking a room logic
-                    bookRoom(hotel, scanner);
+                    bookRoom(hotel, scanner , customers);
                     break;
                 case 4:
                     // Implement check-in logic
+                    checkIn(scanner, customers);
                     break;
                 case 5:
                     // Implement check-out logic
@@ -91,22 +96,22 @@ public class HotelBookingSystem {
         System.out.println("\n");
     }
 
-    public void bookRoom(Hotel hotel, Scanner scanner) {
+    public void bookRoom(Hotel hotel, Scanner scanner, List<Customer> customers) {
         // Display available rooms
         displayAvailableRooms(hotel);
-        
+    
         System.out.println("Please enter which room you would like to book:");
         String roomNumber = scanner.next();
-
+    
         // Check if the room is available
         Room roomToBook = hotel.getRoomByNumber(roomNumber);
         if (roomToBook != null && roomToBook.isCleaned() && !roomToBook.isBooked()) {
             System.out.println("Please enter your name:");
             String name = scanner.next();
-
+    
             System.out.println("Please enter the guest name if any:");
             String guestName = scanner.next();
-
+    
             // Calculate total cost
             double totalCost = roomToBook.getPricePerNight();
             System.out.println("Here is our service:");
@@ -122,24 +127,32 @@ public class HotelBookingSystem {
                 totalCost += serviceCost;
                 System.out.println("Service: " + serviceChoice);
             }
-
+    
+            // Create Customer object and set its attributes
+            Customer customer = new Customer(name, 0, ticketNumber++, 0); // Assuming loyaltyDiscount is not used here
+            customer.setName(name);
+            customer.setDiscount(calculateLoyaltyDiscount(hotel)); // Set discount based on loyalty
+            // Set other attributes as needed
+            customer.setTicket(ticketNumber); // Set the ticket number
+    
             // Print booking information
             System.out.println("Here is your information. Please make sure the information is collected:");
-            System.out.println("Name: " + name);
+            System.out.println("Name: " + customer.getName());
             System.out.println("Guest: " + guestName);
             if (!serviceChoice.equalsIgnoreCase("no")) {
                 System.out.println("Service: " + getServiceDescription(serviceChoice));
             }
             System.out.println("Total Cost: " + totalCost);
             System.out.println("Thank you for your booking!");
-
-            // Generate ticket number
-            int ticket = ticketNumber++;
-            System.out.println("Here is your ticket: " + ticket);
-
-            // Loyalty Discount
-            int loyaltyDiscount = calculateLoyaltyDiscount(hotel);
-            System.out.println("Loyalty Discount: Since you visited " + loyaltyDiscount + " times, you have a $" + loyaltyDiscount + " discount");
+    
+            // Print customer's ticket
+            System.out.println("Here is your ticket: " + customer.getTicket());
+    
+            // Print loyalty discount information
+            System.out.println("Loyalty Discount: Since you visited " + customer.getDiscount() + " times, you have a $" + customer.getDiscount() + " discount");
+    
+            // Add the customer to the list
+            customers.add(customer);
         } else {
             System.out.println("The room is not available for booking.");
         }
@@ -189,7 +202,37 @@ public class HotelBookingSystem {
         return 0; // Placeholder, replace with actual calculation
     }
 
-    abstract static class Room {
+    public void checkIn(Scanner scanner, List<Customer> customers) {
+        System.out.println("\nCheck-in");
+        System.out.println("--------------");
+        System.out.println("Please enter your ticket:");
+        int customerTicket = scanner.nextInt();
+    
+        // Retrieve customer object based on ticket number
+        iNT ticket = customer.getTicket(); <------
+    
+        if (customer != null) {
+            // Get current date and time
+            Date currentDate = new Date();
+            System.out.println("Check-in complete");
+            System.out.println("Check-in time: " + currentDate);
+        } else {
+            System.out.println("Invalid ticket number. Unable to proceed with check-in.");
+        }
+    }
+    
+    // Helper method to find customer by ticket number
+    private Customer findCustomerByTicket(int ticketNumber, List<Customer> customers) {
+        for (Customer customer : customers) {
+            if (customer.getTicket() == ticketNumber) {
+                return customer; // Return the customer object if ticket number matches
+            }
+        }
+        return null; // Return null if customer with the given ticket number is not found
+    }
+
+
+    static abstract class Room {
         private String type;
         private int capacity;
         private double pricePerNight;
@@ -226,10 +269,68 @@ public class HotelBookingSystem {
             this.cleaned = cleaned;
         }
 
-
         // Add getPricePerNight method to your Room class
         public double getPricePerNight() {
             return pricePerNight;
+        }
+    }
+
+    public static class Customer {
+        //private String type; // "guest" or "primary"
+        private String name; // Customer's name
+        private double discount; // Discounts based on loyalty
+        private int ticket; // Ticket number
+        private int customerId; // Unique customer ID
+
+        // Constructor
+        public Customer(String name, double discount, int ticket, int customerId) {
+            this.name = name;
+            this.discount = discount;
+            this.ticket = ticket;
+            this.customerId = customerId;
+        }
+
+        /* 
+        // Getters and setters
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+        */
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public double getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(double discount) {
+            this.discount = discount;
+        }
+
+        public int getTicket() {
+            return ticket;
+        }
+
+        public void setTicket(int ticket) {
+            this.ticket = ticket;
+        }
+
+        public int getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(int customerId) {
+            this.customerId = customerId;
         }
     }
 
@@ -245,7 +346,7 @@ public class HotelBookingSystem {
         }
     }
 
-    abstract static class Hotel {
+    static abstract class Hotel {
         private String name;
         protected List<Room> rooms;
 
@@ -295,7 +396,6 @@ public class HotelBookingSystem {
             System.out.println("-----------------");
         }
 
- 
         public Room getRoomByNumber(String roomNumber) {
             for (Room room : rooms) {
                 if (room.getNumber().equals(roomNumber)) {
@@ -304,9 +404,6 @@ public class HotelBookingSystem {
             }
             return null; // Return null if room not found
         }
-
-
-
     }
 
     static class AlphaHotel extends Hotel {
