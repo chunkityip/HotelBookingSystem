@@ -115,7 +115,7 @@ public class HotelBookingSystem {
             System.out.println("-----------------------------------------------");
             System.out.println("Please enter the service number, or 'no' if none:");
             String serviceChoice = scanner.next();
-            if (!serviceChoice.equalsIgnoreCase("no")) {
+            if (!"no".equalsIgnoreCase(serviceChoice)) {
                 double serviceCost = calculateServiceCost(serviceChoice);
                 totalCost += serviceCost;
                 System.out.println("Service: " + serviceChoice);
@@ -131,7 +131,7 @@ public class HotelBookingSystem {
             System.out.println("Here is your information. Please make sure the information is collected:");
             System.out.println("Name: " + customer.getName());
             System.out.println("Guest: " + guestName);
-            if (!serviceChoice.equalsIgnoreCase("no")) {
+            if (!"no".equalsIgnoreCase(serviceChoice)) {
                 System.out.println("Service: " + getServiceDescription(serviceChoice));
             }
             System.out.println("Total Cost: " + totalCost);
@@ -213,7 +213,7 @@ public class HotelBookingSystem {
         System.out.println("Please enter the service number to add to your booking:");
         String serviceChoice = scanner.next();
 
-        if (!serviceChoice.equalsIgnoreCase("no")) {
+        if (!"no".equalsIgnoreCase(serviceChoice)) {
             double serviceCost = calculateServiceCost(serviceChoice);
             System.out.println("Service: " + getServiceDescription(serviceChoice) + " added. Cost: $" + serviceCost);
         } else {
