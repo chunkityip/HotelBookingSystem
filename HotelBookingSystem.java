@@ -9,7 +9,7 @@ public class HotelBookingSystem {
 
     private int ticketNumber = 1;
     private static final int CHECK_IN_HOUR = 15;  // set a variable that all room should be able to check in at 3 pm 
-    private static final int CHECK_OUT_HOUR = 12; // set a variable that all room should be able check out at 12 noon
+    private static final int CHECK_OUT_HOUR = 12; // set a variable that all room should be able to check in at 3 pm 
 
     public static void main(String[] args) {
         HotelBookingSystem system = new HotelBookingSystem();
@@ -51,7 +51,9 @@ public class HotelBookingSystem {
             System.out.println("4. Check-in");
             System.out.println("5. Check-out");
             System.out.println("6. Manage Services");
-            System.out.println("7. Exit");
+            System.out.println("7. Manage Room Rates (Admin)");
+            System.out.println("8. Apply Seasonal Pricing (Admin)");
+            System.out.println("9. Exit");
             System.out.println("Enter your choice:");
 
             int choice = scanner.nextInt();
@@ -75,6 +77,12 @@ public class HotelBookingSystem {
                     manageServices(scanner);
                     break;
                 case 7:
+                    manageRoomRates(scanner, hotel);
+                    break;
+                case 8:
+                    applySeasonalPricing(scanner, hotel);
+                    break;
+                case 9:
                     System.out.println("Exiting...");
                     exit = true;
                     break;
@@ -104,7 +112,7 @@ public class HotelBookingSystem {
             System.out.println("Please enter your name:");
             String name = scanner.next();
 
-            System.out.println("Please enter the guest name if any, or 'no' if none:");
+            System.out.println("Please enter the guest name if any:");
             String guestName = scanner.next();
 
             double totalCost = roomToBook.getPricePerNight();
@@ -146,8 +154,12 @@ public class HotelBookingSystem {
     }
 
     public void checkIn(Scanner scanner, List<Customer> customers) {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+        String formattedDate = sdf.format(currentDate);
+
         if (!isValidCheckInTime()) {
-            System.out.println("Check-in is only allowed after 3 pm.");
+            System.out.println("The current time is " + formattedDate + ". Check-in is only allowed after 3 pm.");
             return;
         }
 
@@ -159,7 +171,6 @@ public class HotelBookingSystem {
         Customer customer = findCustomerByTicket(customerTicket, customers);
 
         if (customer != null) {
-            Date currentDate = new Date();
             customer.setCheckInTime(currentDate);
             System.out.println("Check-in complete");
             System.out.println("Check-in time: " + currentDate);
@@ -175,9 +186,14 @@ public class HotelBookingSystem {
      * By adding new variable : private String roomNumber at Customer class
      */
 
+
     public void checkOut(Scanner scanner, List<Customer> customers, Hotel hotel) {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+        String formattedDate = sdf.format(currentDate);
+
         if (!isValidCheckOutTime()) {
-            System.out.println("Check-out is only allowed before 12 noon.");
+            System.out.println("The current time is " + formattedDate + ". Check-out is only allowed before 12 noon.");
             return;
         }
 
@@ -193,7 +209,7 @@ public class HotelBookingSystem {
             Room roomToCheckout = hotel.getRoomByNumber(roomNumber);
             if (roomToCheckout != null && roomToCheckout.isBooked()) {
                 roomToCheckout.setBooked(false);
-                customer.setCheckOutTime(new Date());
+                customer.setCheckOutTime(currentDate);
                 System.out.println("Check-out complete");
                 System.out.println("Thank you for staying with us!");
             } else {
@@ -219,6 +235,36 @@ public class HotelBookingSystem {
         } else {
             System.out.println("No service selected.");
         }
+    }
+
+    public void manageRoomRates(Scanner scanner, Hotel hotel) {
+        System.out.println("Manage Room Rates");
+        System.out.println("-----------------");
+        System.out.println("Enter the room number to change the price:");
+        String roomNumber = scanner.next();
+        Room room = hotel.getRoomByNumber(roomNumber);
+
+        if (room != null) {
+            System.out.println("Current price per night for room " + roomNumber + ": " + room.getPricePerNight());
+            System.out.println("Enter the new price:");
+            double newPrice = scanner.nextDouble();
+            room.changePrice(newPrice);
+            System.out.println("Price updated successfully.");
+        } else {
+            System.out.println("Room not found.");
+        }
+    }
+
+    public void applySeasonalPricing(Scanner scanner, Hotel hotel) {
+        System.out.println("Apply Seasonal Pricing");
+        System.out.println("----------------------");
+        System.out.println("Enter the season (winter/summer):");
+        String season = scanner.next();
+
+        for (Room room : hotel.rooms) {
+            room.applySeasonalPricing(season);
+        }
+        System.out.println("Seasonal pricing applied successfully.");
     }
 
     public double calculateServiceCost(String serviceChoice) {
@@ -270,18 +316,40 @@ public class HotelBookingSystem {
         return null;
     }
 
-    // A method to only allow customer to check in at 3pm 
     private boolean isValidCheckInTime() {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         return hour >= CHECK_IN_HOUR;
     }
 
-    // A method to only allow customer to check out at 12pm 
     private boolean isValidCheckOutTime() {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         return hour < CHECK_OUT_HOUR;
+    }
+
+    // Automatically cancel bookings if not checked in by 12 pm on the day of booking
+    private void cancelBookingsIfNotCheckedIn(List<Customer> customers, Hotel hotel) {
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+
+        if (currentHour >= CHECK_OUT_HOUR) {
+            List<Customer> customersToCancel = new ArrayList<>();
+            for (Customer customer : customers) {
+                if (customer.getCheckInTime() == null) {
+                    String roomNumber = customer.getRoomNumber();
+                    Room room = hotel.getRoomByNumber(roomNumber);
+                    if (room != null && room.isBooked()) {
+                        room.setBooked(false);
+                        customersToCancel.add(customer);
+                        System.out.println("Booking for ticket " + customer.getTicket() + " has been canceled due to no check-in by 12 pm.");
+                    }
+                }
+            }
+            customers.removeAll(customersToCancel);
+        }
     }
 
     static abstract class Room {
@@ -328,6 +396,37 @@ public class HotelBookingSystem {
         public double getPricePerNight() {
             return pricePerNight;
         }
+
+        public void setPricePerNight(double pricePerNight) {
+            this.pricePerNight = pricePerNight;
+        }
+
+        public void changePrice(double newPrice) {
+            this.pricePerNight = newPrice;
+        }
+
+        public void applySeasonalPricing(String season) {
+            switch (season.toLowerCase()) {
+                case "winter":
+                    if (type.equals("Double Standard")) {
+                        this.pricePerNight = 100.0;
+                    } else if (type.equals("Deluxe Double")) {
+                        this.pricePerNight = 150.0;
+                    }
+                    // Add more conditions for other room types
+                    break;
+                case "summer":
+                    if (type.equals("Double Standard")) {
+                        this.pricePerNight = 175.0;
+                    } else if (type.equals("Deluxe Double")) {
+                        this.pricePerNight = 225.0;
+                    }
+                    // Add more conditions for other room types
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     public static class Customer {
@@ -335,7 +434,7 @@ public class HotelBookingSystem {
         private double discount;
         private int ticket;
         private int customerId;
-        private String roomNumber; // New attribute
+        private String roomNumber;
         private Date checkInTime;
         private Date checkOutTime;
 
