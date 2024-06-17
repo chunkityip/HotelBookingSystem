@@ -79,9 +79,11 @@ public class HotelBookingSystem {
                 case 7:
                     manageRoomRates(scanner, hotel);
                     break;
+                /*
                 case 8:
                     applySeasonalPricing(scanner, hotel);
                     break;
+                 */
                 case 9:
                     System.out.println("Exiting...");
                     exit = true;
@@ -255,6 +257,7 @@ public class HotelBookingSystem {
         }
     }
 
+    /*
     public void applySeasonalPricing(Scanner scanner, Hotel hotel) {
         System.out.println("Apply Seasonal Pricing");
         System.out.println("----------------------");
@@ -266,6 +269,7 @@ public class HotelBookingSystem {
         }
         System.out.println("Seasonal pricing applied successfully.");
     }
+     */
 
     public double calculateServiceCost(String serviceChoice) {
         double serviceCost = 0;
@@ -405,6 +409,7 @@ public class HotelBookingSystem {
             this.pricePerNight = newPrice;
         }
 
+        /*
         public void applySeasonalPricing(String season) {
             switch (season.toLowerCase()) {
                 case "winter":
@@ -427,6 +432,7 @@ public class HotelBookingSystem {
                     break;
             }
         }
+        */
     }
 
     public static class Customer {
