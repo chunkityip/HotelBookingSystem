@@ -5,6 +5,9 @@ import java.util.Scanner;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 public class HotelBookingSystem {
     private int ticketNumber = 1;
     private static final int CHECK_IN_HOUR = 15;
