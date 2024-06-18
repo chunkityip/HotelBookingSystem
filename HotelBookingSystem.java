@@ -6,43 +6,38 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class HotelBookingSystem {
-
     private int ticketNumber = 1;
-    private static final int CHECK_IN_HOUR = 15;  // set a variable that all room should be able to check in at 3 pm 
-    private static final int CHECK_OUT_HOUR = 12; // set a variable that all room should be able to check in at 3 pm 
-
-    public static void main(String[] args) {
-        HotelBookingSystem system = new HotelBookingSystem();
-        system.run();
-    }
+    private static final int CHECK_IN_HOUR = 15;
+    private static final int CHECK_OUT_HOUR = 12;
 
     public void run() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to the Hotel Booking System!");
-        System.out.println("1. Choose the Hotel");
-        System.out.println("(1 for Old Hotel: Alpha)");
-        System.out.println("(2 for New Hotel: Beta)");
-        int choice = scanner.nextInt();
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Welcome to the Hotel Booking System!");
+            System.out.println("1. Choose the Hotel");
+            System.out.println("(1 for Old Hotel: Alpha)");
+            System.out.println("(2 for New Hotel: Beta)");
+            int choice = scanner.nextInt();
 
-        List<Customer> customers = new ArrayList<>();
+            List<Customer> customers = new ArrayList<>();
 
-        switch (choice) {
-            case 1:
-                Hotel alphaHotel = new AlphaHotel();
-                showHotelMenu(alphaHotel, scanner, customers);
-                break;
-            case 2:
-                Hotel betaHotel = new BetaHotel();
-                showHotelMenu(betaHotel, scanner, customers);
-                break;
-            default:
-                System.out.println("Invalid choice. Please try again.");
+            switch (choice) {
+                case 1:
+                    Hotel alphaHotel = new AlphaHotel();
+                    showHotelMenu(alphaHotel, scanner, customers);
+                    break;
+                case 2:
+                    Hotel betaHotel = new BetaHotel();
+                    showHotelMenu(betaHotel, scanner, customers);
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
         }
     }
 
-    public void showHotelMenu(Hotel hotel, Scanner scanner, List<Customer> customers) {
+    private void showHotelMenu(Hotel hotel, Scanner scanner, List<Customer> customers) {
         boolean exit = false;
-        do {
+        while (!exit) {
             System.out.println("Welcome to " + hotel.getName() + "!");
             System.out.println("Menu:");
             System.out.println("1. Available rooms");
@@ -89,10 +84,10 @@ public class HotelBookingSystem {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        } while (!exit);
+        }
     }
 
-    public void displayAvailableRooms(Hotel hotel) {
+    private void displayAvailableRooms(Hotel hotel) {
         List<Room> availableRooms = hotel.getAvailableRooms();
         System.out.println("Available Rooms:");
         for (Room room : availableRooms) {
@@ -102,7 +97,7 @@ public class HotelBookingSystem {
         System.out.println("\n");
     }
 
-    public void bookRoom(Hotel hotel, Scanner scanner, List<Customer> customers) {
+    private void bookRoom(Hotel hotel, Scanner scanner, List<Customer> customers) {
         displayAvailableRooms(hotel);
         System.out.println("Please enter which room you would like to book:");
         String roomNumber = scanner.next();
@@ -131,12 +126,12 @@ public class HotelBookingSystem {
 
             Customer customer = new Customer(name, 0, ticketNumber++, 0, roomNumber);
             customer.setName(name);
-            customer.setDiscount(calculateLoyaltyDiscount(hotel));
+            customer.setDiscount(calculateLoyaltyDiscount(customer));
             customer.setTicket(ticketNumber);
 
             roomToBook.setBooked(true);
 
-            System.out.println("Here is your information. Please make sure the information is collected:");
+            System.out.println("Here is your information. Please make sure the information is correct:");
             System.out.println("Name: " + customer.getName());
             System.out.println("Guest: " + guestName);
             if (!serviceChoice.equalsIgnoreCase("no")) {
@@ -153,7 +148,7 @@ public class HotelBookingSystem {
         }
     }
 
-    public void checkIn(Scanner scanner, List<Customer> customers) {
+    private void checkIn(Scanner scanner, List<Customer> customers) {
         Date currentDate = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
         String formattedDate = sdf.format(currentDate);
@@ -172,6 +167,7 @@ public class HotelBookingSystem {
 
         if (customer != null) {
             customer.setCheckInTime(currentDate);
+            customer.incrementNumberOfStays(); // Increment number of stays on check-in
             System.out.println("Check-in complete");
             System.out.println("Check-in time: " + currentDate);
         } else {
@@ -179,15 +175,7 @@ public class HotelBookingSystem {
         }
     }
 
-    /*
-     * Faceing a issue that checkOut() are not working:
-     * To fix it : adjust the booking process to mark rooms as booked and associate them with customer tickets.
-     * 
-     * By adding new variable : private String roomNumber at Customer class
-     */
-
-
-    public void checkOut(Scanner scanner, List<Customer> customers, Hotel hotel) {
+    private void checkOut(Scanner scanner, List<Customer> customers, Hotel hotel) {
         Date currentDate = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
         String formattedDate = sdf.format(currentDate);
@@ -220,7 +208,7 @@ public class HotelBookingSystem {
         }
     }
 
-    public void manageServices(Scanner scanner) {
+    private void manageServices(Scanner scanner) {
         System.out.println("Manage Services");
         System.out.println("------------------");
         System.out.println("1. Breakfast: $10 per day");
@@ -237,7 +225,7 @@ public class HotelBookingSystem {
         }
     }
 
-    public void manageRoomRates(Scanner scanner, Hotel hotel) {
+    private void manageRoomRates(Scanner scanner, Hotel hotel) {
         System.out.println("Manage Room Rates");
         System.out.println("-----------------");
         System.out.println("Enter the room number to change the price:");
@@ -255,56 +243,47 @@ public class HotelBookingSystem {
         }
     }
 
-    public void applySeasonalPricing(Scanner scanner, Hotel hotel) {
+    private void applySeasonalPricing(Scanner scanner, Hotel hotel) {
         System.out.println("Apply Seasonal Pricing");
         System.out.println("----------------------");
         System.out.println("Enter the season (winter/summer):");
         String season = scanner.next();
 
-        for (Room room : hotel.rooms) {
+        for (Room room : hotel.getRooms()) {
             room.applySeasonalPricing(season);
         }
         System.out.println("Seasonal pricing applied successfully.");
     }
 
-    public double calculateServiceCost(String serviceChoice) {
-        double serviceCost = 0;
+    private double calculateServiceCost(String serviceChoice) {
         switch (serviceChoice) {
             case "1":
-                serviceCost = 10.0;
-                break;
+                return 10.0;
             case "2":
-                serviceCost = 20.0;
-                break;
+                return 20.0;
             case "3":
-                serviceCost = 5.0;
-                break;
+                return 5.0;
             default:
-                break;
+                return 0;
         }
-        return serviceCost;
     }
 
-    public String getServiceDescription(String serviceChoice) {
-        String serviceDescription = "";
+    private String getServiceDescription(String serviceChoice) {
         switch (serviceChoice) {
             case "1":
-                serviceDescription = "Breakfast";
-                break;
+                return "Breakfast";
             case "2":
-                serviceDescription = "Customer Service";
-                break;
+                return "Customer Service";
             case "3":
-                serviceDescription = "Laundry Service";
-                break;
+                return "Laundry Service";
             default:
-                break;
+                return "";
         }
-        return serviceDescription;
     }
 
-    public int calculateLoyaltyDiscount(Hotel hotel) {
-        return 0;
+    private double calculateLoyaltyDiscount(Customer customer) {
+        int numberOfStays = customer.getNumberOfStays();
+        return Math.min(numberOfStays * 1.0, 20.0);  // 1% per stay, max 20%
     }
 
     private Customer findCustomerByTicket(int ticketNumber, List<Customer> customers) {
@@ -317,23 +296,19 @@ public class HotelBookingSystem {
     }
 
     private boolean isValidCheckInTime() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         return hour >= CHECK_IN_HOUR;
     }
 
     private boolean isValidCheckOutTime() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         return hour < CHECK_OUT_HOUR;
     }
 
     // Automatically cancel bookings if not checked in by 12 pm on the day of booking
     private void cancelBookingsIfNotCheckedIn(List<Customer> customers, Hotel hotel) {
         Date currentDate = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
         if (currentHour >= CHECK_OUT_HOUR) {
             List<Customer> customersToCancel = new ArrayList<>();
@@ -349,281 +324,6 @@ public class HotelBookingSystem {
                 }
             }
             customers.removeAll(customersToCancel);
-        }
-    }
-
-    static abstract class Room {
-        private String type;
-        private int capacity;
-        private double pricePerNight;
-        private boolean cleaned;
-        private boolean booked;
-        private String number;
-
-        public Room(String type, int capacity, double pricePerNight, String number) {
-            this.type = type;
-            this.capacity = capacity;
-            this.pricePerNight = pricePerNight;
-            this.cleaned = true;
-            this.booked = false;
-            this.number = number;
-        }
-
-        public boolean isCleaned() {
-            return cleaned;
-        }
-
-        public boolean isBooked() {
-            return booked;
-        }
-
-        public String getNumber() {
-            return number;
-        }
-
-        public String getTypeString() {
-            return type;
-        }
-
-        public void setCleaned(boolean cleaned) {
-            this.cleaned = cleaned;
-        }
-
-        public void setBooked(boolean booked) {
-            this.booked = booked;
-        }
-
-        public double getPricePerNight() {
-            return pricePerNight;
-        }
-
-        public void setPricePerNight(double pricePerNight) {
-            this.pricePerNight = pricePerNight;
-        }
-
-        public void changePrice(double newPrice) {
-            this.pricePerNight = newPrice;
-        }
-
-        public void applySeasonalPricing(String season) {
-            switch (season.toLowerCase()) {
-                case "winter":
-                    if (type.equals("Double Standard")) {
-                        this.pricePerNight = 100.0;
-                    } else if (type.equals("Deluxe Double")) {
-                        this.pricePerNight = 150.0;
-                    }
-                    // Add more conditions for other room types
-                    break;
-                case "summer":
-                    if (type.equals("Double Standard")) {
-                        this.pricePerNight = 175.0;
-                    } else if (type.equals("Deluxe Double")) {
-                        this.pricePerNight = 225.0;
-                    }
-                    // Add more conditions for other room types
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    public static class Customer {
-        private String name;
-        private double discount;
-        private int ticket;
-        private int customerId;
-        private String roomNumber;
-        private Date checkInTime;
-        private Date checkOutTime;
-
-        public Customer(String name, double discount, int ticket, int customerId, String roomNumber) {
-            this.name = name;
-            this.discount = discount;
-            this.ticket = ticket;
-            this.customerId = customerId;
-            this.roomNumber = roomNumber;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public double getDiscount() {
-            return discount;
-        }
-
-        public void setDiscount(double discount) {
-            this.discount = discount;
-        }
-
-        public int getTicket() {
-            return ticket;
-        }
-
-        public void setTicket(int ticket) {
-            this.ticket = ticket;
-        }
-
-        public int getCustomerId() {
-            return customerId;
-        }
-
-        public void setCustomerId(int customerId) {
-            this.customerId = customerId;
-        }
-
-        public String getRoomNumber() {
-            return roomNumber;
-        }
-
-        public void setRoomNumber(String roomNumber) {
-            this.roomNumber = roomNumber;
-        }
-
-        public Date getCheckInTime() {
-            return checkInTime;
-        }
-
-        public void setCheckInTime(Date checkInTime) {
-            this.checkInTime = checkInTime;
-        }
-
-        public Date getCheckOutTime() {
-            return checkOutTime;
-        }
-
-        public void setCheckOutTime(Date checkOutTime) {
-            this.checkOutTime = checkOutTime;
-        }
-    }
-
-    static class AlphaRoom extends Room {
-        public AlphaRoom(String type, int capacity, double pricePerNight, String number) {
-            super(type, capacity, pricePerNight, number);
-        }
-    }
-
-    static class BetaRoom extends Room {
-        public BetaRoom(String type, int capacity, double pricePerNight, String number) {
-            super(type, capacity, pricePerNight, number);
-        }
-    }
-
-    static abstract class Hotel {
-        private String name;
-        protected List<Room> rooms;
-
-        public Hotel(String name) {
-            this.name = name;
-            this.rooms = new ArrayList<>();
-            initializeRooms();
-        }
-
-        protected abstract void initializeRooms();
-
-        public String getName() {
-            return name;
-        }
-
-        public abstract void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
-
-        public abstract void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
-
-        public abstract void removeRoomType(String roomType);
-
-        public List<Room> getAvailableRooms() {
-            List<Room> availableRooms = new ArrayList<>();
-            for (Room room : rooms) {
-                if (room.isCleaned() && !room.isBooked()) {
-                    availableRooms.add(room);
-                }
-            }
-            return availableRooms;
-        }
-
-        public void cleanRooms() {
-            for (Room room : rooms) {
-                if (!room.isCleaned()) {
-                    System.out.println(room.getNumber() + " is cleaning!");
-                    room.setCleaned(true);
-                } else {
-                    System.out.println("Room " + room.getNumber() + " is cleaned!");
-                }
-            }
-            System.out.println("-----------------");
-        }
-
-        public Room getRoomByNumber(String roomNumber) {
-            for (Room room : rooms) {
-                if (room.getNumber().equals(roomNumber)) {
-                    return room;
-                }
-            }
-            return null;
-        }
-    }
-
-    static class AlphaHotel extends Hotel {
-        public AlphaHotel() {
-            super("Alpha");
-        }
-
-        @Override
-        protected void initializeRooms() {
-            rooms.add(new AlphaRoom("Double Standard", 2, 150.0, "201"));
-            rooms.add(new AlphaRoom("Double Standard", 2, 150.0, "202"));
-            rooms.add(new AlphaRoom("Deluxe Double", 2, 200.0, "301"));
-            rooms.add(new AlphaRoom("Deluxe Double", 2, 200.0, "302"));
-            rooms.add(new AlphaRoom("Junior Suite", 2, 300.0, "401"));
-            rooms.add(new AlphaRoom("Grand Suite", 2, 400.0, "501"));
-            rooms.add(new AlphaRoom("Family Room", 3, 225.0, "601"));
-        }
-
-        @Override
-        public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        }
-
-        @Override
-        public void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        }
-
-        @Override
-        public void removeRoomType(String roomType) {
-        }
-    }
-
-    static class BetaHotel extends Hotel {
-        public BetaHotel() {
-            super("Beta");
-        }
-
-        @Override
-        protected void initializeRooms() {
-            rooms.add(new BetaRoom("Double Standard", 2, 150.0, "201"));
-            rooms.add(new BetaRoom("Double Standard", 2, 150.0, "202"));
-            rooms.add(new BetaRoom("Deluxe Double", 2, 200.0, "301"));
-            rooms.add(new BetaRoom("Deluxe Double", 2, 200.0, "302"));
-            rooms.add(new BetaRoom("Junior Suite", 2, 300.0, "401"));
-            rooms.add(new BetaRoom("Grand Suite", 2, 400.0, "501"));
-            rooms.add(new BetaRoom("Family Room", 3, 225.0, "601"));
-        }
-
-        @Override
-        public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        }
-
-        @Override
-        public void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        }
-
-        @Override
-        public void removeRoomType(String roomType) {
         }
     }
 }
