@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Hotel {
     private String name;
     protected List<Room> rooms;
@@ -17,11 +20,30 @@ public abstract class Hotel {
         return name;
     }
 
-    public abstract void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
+    public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
+        int nextRoomNumber = rooms.size() + 1;
+        for (int i = 0; i < numberOfRooms; i++) {
+            rooms.add(createRoom(roomType, capacity, pricePerNight, String.valueOf(nextRoomNumber++)));
+        }
+    }
 
-    public abstract void updateRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms);
+    public void updateRoomType(String oldRoomType, String newRoomType, int capacity, double pricePerNight) {
+        for (Room room : rooms) {
+            if (room.getTypeString().equals(oldRoomType) && !room.isBooked()) {
+                room.updateRoom(newRoomType, capacity, pricePerNight);
+            }
+        }
+    }
 
-    public abstract void removeRoomType(String roomType);
+    public void removeRoomType(String roomType) {
+        List<Room> roomsToRemove = new ArrayList<>();
+        for (Room room : rooms) {
+            if (room.getTypeString().equals(roomType) && !room.isBooked()) {
+                roomsToRemove.add(room);
+            }
+        }
+        rooms.removeAll(roomsToRemove);
+    }
 
     public List<Room> getAvailableRooms() {
         List<Room> availableRooms = new ArrayList<>();
@@ -56,5 +78,11 @@ public abstract class Hotel {
             }
         }
         return null;
+    }
+
+    protected abstract Room createRoom(String roomType, int capacity, double pricePerNight, String number);
+
+    private String generateRoomNumber() {
+        return String.valueOf(rooms.size() + 1);
     }
 }

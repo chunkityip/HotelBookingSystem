@@ -47,6 +47,12 @@ public abstract class Room {
         this.pricePerNight = pricePerNight;
     }
 
+    public void updateRoom(String newType, int newCapacity, double newPricePerNight) {
+        this.type = newType;
+        this.capacity = newCapacity;
+        this.pricePerNight = newPricePerNight;
+    }
+
     public void changePrice(double newPrice) {
         this.pricePerNight = newPrice;
     }

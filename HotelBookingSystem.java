@@ -1,12 +1,5 @@
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class HotelBookingSystem {
     private int ticketNumber = 1;
@@ -19,7 +12,7 @@ public class HotelBookingSystem {
             System.out.println("1. Choose the Hotel");
             System.out.println("(1 for Old Hotel: Alpha)");
             System.out.println("(2 for New Hotel: Beta)");
-            int choice = scanner.nextInt();
+            int choice = getIntInput(scanner);
 
             List<Customer> customers = new ArrayList<>();
 
@@ -51,10 +44,13 @@ public class HotelBookingSystem {
             System.out.println("6. Manage Services");
             System.out.println("7. Manage Room Rates (Admin)");
             System.out.println("8. Apply Seasonal Pricing (Admin)");
-            System.out.println("9. Exit");
+            System.out.println("9. Add Room Type (Admin)");
+            System.out.println("10. Update Room Type (Admin)");
+            System.out.println("11. Remove Room Type (Admin)");
+            System.out.println("12. Exit");
             System.out.println("Enter your choice:");
 
-            int choice = scanner.nextInt();
+            int choice = getIntInput(scanner);
             switch (choice) {
                 case 1:
                     displayAvailableRooms(hotel);
@@ -81,6 +77,15 @@ public class HotelBookingSystem {
                     applySeasonalPricing(scanner, hotel);
                     break;
                 case 9:
+                    addRoomType(scanner, hotel);
+                    break;
+                case 10:
+                    updateRoomType(scanner, hotel);
+                    break;
+                case 11:
+                    removeRoomType(scanner, hotel);
+                    break;
+                case 12:
                     System.out.println("Exiting...");
                     exit = true;
                     break;
@@ -164,7 +169,7 @@ public class HotelBookingSystem {
         System.out.println("\nCheck-in");
         System.out.println("--------------");
         System.out.println("Please enter your ticket:");
-        int customerTicket = scanner.nextInt();
+        int customerTicket = getIntInput(scanner);
 
         Customer customer = findCustomerByTicket(customerTicket, customers);
 
@@ -191,7 +196,7 @@ public class HotelBookingSystem {
         System.out.println("\nCheck-out");
         System.out.println("--------------");
         System.out.println("Please enter your ticket:");
-        int customerTicket = scanner.nextInt();
+        int customerTicket = getIntInput(scanner);
 
         Customer customer = findCustomerByTicket(customerTicket, customers);
 
@@ -238,7 +243,7 @@ public class HotelBookingSystem {
         if (room != null) {
             System.out.println("Current price per night for room " + roomNumber + ": " + room.getPricePerNight());
             System.out.println("Enter the new price:");
-            double newPrice = scanner.nextDouble();
+            double newPrice = getDoubleInput(scanner);
             room.changePrice(newPrice);
             System.out.println("Price updated successfully.");
         } else {
@@ -256,6 +261,48 @@ public class HotelBookingSystem {
             room.applySeasonalPricing(season);
         }
         System.out.println("Seasonal pricing applied successfully.");
+    }
+
+    private void addRoomType(Scanner scanner, Hotel hotel) {
+        System.out.println("Add Room Type");
+        System.out.println("----------------------");
+        System.out.println("Enter the room type:");
+        String roomType = scanner.next();
+        System.out.println("Enter the room capacity:");
+        int capacity = getIntInput(scanner);
+        System.out.println("Enter the price per night:");
+        double pricePerNight = getDoubleInput(scanner);
+        System.out.println("Enter the number of rooms:");
+        int numberOfRooms = getIntInput(scanner);
+
+        hotel.addRoomType(roomType, capacity, pricePerNight, numberOfRooms);
+        System.out.println("Room type added successfully.");
+    }
+
+    private void updateRoomType(Scanner scanner, Hotel hotel) {
+        System.out.println("Update Room Type");
+        System.out.println("----------------------");
+        System.out.println("Enter the old room type:");
+        String oldRoomType = scanner.next();
+        System.out.println("Enter the new room type:");
+        String newRoomType = scanner.next();
+        System.out.println("Enter the new room capacity:");
+        int capacity = getIntInput(scanner);
+        System.out.println("Enter the new price per night:");
+        double pricePerNight = getDoubleInput(scanner);
+
+        hotel.updateRoomType(oldRoomType, newRoomType, capacity, pricePerNight);
+        System.out.println("Room type updated successfully.");
+    }
+
+    private void removeRoomType(Scanner scanner, Hotel hotel) {
+        System.out.println("Remove Room Type");
+        System.out.println("----------------------");
+        System.out.println("Enter the room type to remove:");
+        String roomType = scanner.next();
+
+        hotel.removeRoomType(roomType);
+        System.out.println("Room type removed successfully.");
     }
 
     private double calculateServiceCost(String serviceChoice) {
@@ -327,6 +374,28 @@ public class HotelBookingSystem {
                 }
             }
             customers.removeAll(customersToCancel);
+        }
+    }
+
+    private int getIntInput(Scanner scanner) {
+        while (true) {
+            try {
+                return scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter an integer:");
+                scanner.next(); // Clear invalid input
+            }
+        }
+    }
+
+    private double getDoubleInput(Scanner scanner) {
+        while (true) {
+            try {
+                return scanner.nextDouble();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a decimal number:");
+                scanner.next(); // Clear invalid input
+            }
         }
     }
 }
