@@ -6,8 +6,8 @@ import java.util.*;
 
 public class HotelBookingSystem {
     private int ticketNumber = 1;
-    private static final int CHECK_IN_HOUR = 15;
-    private static final int CHECK_OUT_HOUR = 12;
+    private static final int checkInHour = 15;
+    private static final int checkOutHour = 12;
 
     public void run() {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -135,10 +135,18 @@ public class HotelBookingSystem {
                 System.out.println("Service: " + serviceChoice);
             }
 
-            Customer customer = new Customer(name, 0, ticketNumber++, 0, roomNumber);
-            customer.setName(name);
-            customer.setDiscount(calculateLoyaltyDiscount(customer));
-            customer.setTicket(ticketNumber);
+            Customer customer = findCustomerByName(name, customers);
+            if (customer == null) {
+                customer = new Customer(name, 0, ticketNumber++, customers.size(), roomNumber);
+                customers.add(customer);
+            } else {
+                customer.incrementNumberOfStays();
+                customer.setRoomNumber(roomNumber);
+                customer.setTicket(ticketNumber++);
+            }
+
+            double discount = calculateLoyaltyDiscount(customer);
+            totalCost -= discount;
 
             roomToBook.setBooked(true);
 
@@ -151,9 +159,7 @@ public class HotelBookingSystem {
             System.out.println("Total Cost: " + totalCost);
             System.out.println("Thank you for your booking!");
             System.out.println("Here is your ticket: " + customer.getTicket());
-            System.out.println("Loyalty Discount: Since you visited " + customer.getDiscount() + " times, you have a $" + customer.getDiscount() + " discount");
-
-            customers.add(customer);
+            System.out.println("Loyalty Discount: Since you visited " + customer.getNumberOfStays() + " times, you have a " + discount + " % discount");
         } else {
             System.out.println("The room is not available for booking.");
         }
@@ -254,6 +260,7 @@ public class HotelBookingSystem {
         }
     }
 
+
     private void applySeasonalPricing(Scanner scanner, Hotel hotel) {
         System.out.println("Apply Seasonal Pricing");
         System.out.println("----------------------");
@@ -350,12 +357,12 @@ public class HotelBookingSystem {
 
     private boolean isValidCheckInTime() {
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        return hour >= CHECK_IN_HOUR;
+        return hour >= checkInHour;
     }
 
     private boolean isValidCheckOutTime() {
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        return hour < CHECK_OUT_HOUR;
+        return hour < checkOutHour;
     }
 
     // Automatically cancel bookings if not checked in by 12 pm on the day of booking
@@ -363,7 +370,7 @@ public class HotelBookingSystem {
         Date currentDate = new Date();
         int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
-        if (currentHour >= CHECK_OUT_HOUR) {
+        if (currentHour >= checkOutHour) {
             List<Customer> customersToCancel = new ArrayList<>();
             for (Customer customer : customers) {
                 if (customer.getCheckInTime() == null) {
@@ -378,6 +385,15 @@ public class HotelBookingSystem {
             }
             customers.removeAll(customersToCancel);
         }
+    }
+
+    private Customer findCustomerByName(String name, List<Customer> customers) {
+        for (Customer customer : customers) {
+            if (customer.getName().equalsIgnoreCase(name)) {
+                return customer;
+            }
+        }
+        return null;
     }
 
     private int getIntInput(Scanner scanner) {

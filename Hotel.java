@@ -1,9 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class Hotel {
     private String name;
     protected List<Room> rooms;
@@ -21,10 +18,9 @@ public abstract class Hotel {
     }
 
     public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        int currentRoomCount = rooms.size();
+        int nextRoomNumber = rooms.size() + 1;
         for (int i = 0; i < numberOfRooms; i++) {
-            String roomNumber = String.valueOf(currentRoomCount + i + 1);
-            rooms.add(createRoom(roomType, capacity, pricePerNight, roomNumber));
+            rooms.add(createRoom(roomType, capacity, pricePerNight, String.valueOf(nextRoomNumber++)));
         }
     }
 
@@ -45,7 +41,6 @@ public abstract class Hotel {
         }
         rooms.removeAll(roomsToRemove);
     }
-
 
     public List<Room> getAvailableRooms() {
         List<Room> availableRooms = new ArrayList<>();
