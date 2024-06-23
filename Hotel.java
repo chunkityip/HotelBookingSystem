@@ -21,9 +21,10 @@ public abstract class Hotel {
     }
 
     public void addRoomType(String roomType, int capacity, double pricePerNight, int numberOfRooms) {
-        int nextRoomNumber = rooms.size() + 1;
+        int currentRoomCount = rooms.size();
         for (int i = 0; i < numberOfRooms; i++) {
-            rooms.add(createRoom(roomType, capacity, pricePerNight, String.valueOf(nextRoomNumber++)));
+            String roomNumber = String.valueOf(currentRoomCount + i + 1);
+            rooms.add(createRoom(roomType, capacity, pricePerNight, roomNumber));
         }
     }
 
@@ -44,6 +45,7 @@ public abstract class Hotel {
         }
         rooms.removeAll(roomsToRemove);
     }
+
 
     public List<Room> getAvailableRooms() {
         List<Room> availableRooms = new ArrayList<>();

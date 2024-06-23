@@ -1,5 +1,8 @@
-import java.util.*;
 import java.text.SimpleDateFormat;
+import java.util.*;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class HotelBookingSystem {
     private int ticketNumber = 1;

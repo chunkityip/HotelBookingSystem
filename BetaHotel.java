@@ -5,8 +5,8 @@ public class BetaHotel extends Hotel {
 
     @Override
     protected void initializeRooms() {
-        addRoomType("Double Standard", 2, 150.0, 2);
-        addRoomType("Deluxe Double", 2, 200.0, 2);
+        addRoomType("Double Standard", 2, 150.0, 4);
+        addRoomType("Deluxe Double", 2, 200.0, 4);
         addRoomType("Junior Suite", 2, 300.0, 1);
         addRoomType("Grand Suite", 2, 400.0, 1);
         addRoomType("Family Room", 3, 225.0, 1);
